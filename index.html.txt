@@ -1,360 +1,668 @@
 <!DOCTYPE html>
-
 <html lang="ar" dir="rtl">
-
 <head>
-
 <meta charset="UTF-8"/>
-
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-
-<title>Elite Star Bot</title>
-
+<title>Elite Star</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap');
 
-*{margin:0;padding:0;box-sizing:border-box}
+:root {
+  --gold: #F0C040;
+  --gold2: #FFD700;
+  --orange: #FF8C00;
+  --purple: #8B5CF6;
+  --bg: #080810;
+  --bg2: #0D0D1A;
+  --card: rgba(255,255,255,0.04);
+  --card2: rgba(255,255,255,0.07);
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(240,192,64,0.3);
+  --text: #F0F0FF;
+  --muted: rgba(240,240,255,0.45);
+  --muted2: rgba(240,240,255,0.25);
+  --radius: 18px;
+  --radius-sm: 12px;
+}
 
-:root{--gold:#f5c518;--orange:#ff8c00;--red:#ff4757;--bg:#0f0f1a;--card:rgba(255,255,255,.05);--border:rgba(255,255,255,.08);--muted:rgba(255,255,255,.5)}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
-body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--tg-theme-bg-color,var(--bg));color:var(--tg-theme-text-color,#fff);min-height:100vh;padding-bottom:80px}
+body {
+  font-family:'Tajawal',sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding-bottom: 90px;
+}
 
-.nav{position:fixed;bottom:0;left:0;right:0;background:rgba(15,15,26,.97);backdrop-filter:blur(12px);border-top:1px solid var(--border);display:flex;z-index:100}
+/* BACKGROUND GLOW */
+body::before {
+  content:'';
+  position:fixed;
+  top:-200px; left:50%;
+  transform:translateX(-50%);
+  width:600px; height:600px;
+  background: radial-gradient(circle, rgba(240,192,64,0.06) 0%, transparent 70%);
+  pointer-events:none; z-index:0;
+}
+body::after {
+  content:'';
+  position:fixed;
+  bottom:-100px; right:-100px;
+  width:400px; height:400px;
+  background: radial-gradient(circle, rgba(139,92,246,0.05) 0%, transparent 70%);
+  pointer-events:none; z-index:0;
+}
 
-.nav-btn{flex:1;padding:10px 0 8px;background:none;border:none;color:var(--muted);font-size:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .2s}
+/* PAGES */
+.page { display:none; position:relative; z-index:1; animation:fadeIn .25s ease; }
+.page.active { display:block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
 
-.nav-btn .ic{font-size:22px}
+/* ========= NAV ========= */
+.nav {
+  position:fixed; bottom:0; left:0; right:0; z-index:200;
+  background: rgba(8,8,16,0.92);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display:flex; padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+}
+.nav-btn {
+  flex:1; background:none; border:none; color:var(--muted);
+  font-size:10px; font-family:'Tajawal',sans-serif; font-weight:500;
+  cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:4px;
+  transition:color .2s; padding:4px 0;
+}
+.nav-btn .ni { font-size:20px; transition:transform .2s; }
+.nav-btn.active { color:var(--gold); }
+.nav-btn.active .ni { transform:scale(1.15); }
+.nav-indicator {
+  position:absolute; top:0; left:0; right:0;
+  height:1.5px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity:0; transition:opacity .3s;
+}
+.nav.has-active .nav-indicator { opacity:1; }
 
-.nav-btn.active{color:var(--gold)}
+/* ========= HEADER ========= */
+.hero-header {
+  padding: 32px 20px 20px;
+  text-align:center;
+  position:relative;
+}
+.hero-glow {
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:300px; height:150px;
+  background: radial-gradient(ellipse, rgba(240,192,64,0.12) 0%, transparent 70%);
+  pointer-events:none;
+}
+.logo-wrap {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:72px; height:72px; border-radius:22px;
+  background: linear-gradient(135deg, rgba(240,192,64,0.15), rgba(255,140,0,0.08));
+  border: 1px solid rgba(240,192,64,0.2);
+  font-size:36px; margin-bottom:14px;
+  box-shadow: 0 8px 32px rgba(240,192,64,0.1);
+}
+.hero-title {
+  font-size:26px; font-weight:900; letter-spacing:-0.5px;
+  background: linear-gradient(135deg, #FFD700, #F0C040, #FF8C00);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  margin-bottom:6px;
+}
+.hero-sub { font-size:13px; color:var(--muted); font-weight:400; }
 
-.page{display:none;padding:16px}
+/* ========= SECTION LABEL ========= */
+.sec-label {
+  font-size:11px; font-weight:700; color:var(--muted2);
+  text-transform:uppercase; letter-spacing:1.5px;
+  padding: 0 20px; margin:20px 0 10px;
+  display:flex; align-items:center; gap:8px;
+}
+.sec-label::after { content:''; flex:1; height:1px; background:var(--border); }
 
-.page.active{display:block}
+/* ========= PACKAGE CARDS ========= */
+.pkg-list { padding:0 16px; display:flex; flex-direction:column; gap:10px; }
 
-.header{text-align:center;padding:20px 0 12px}
+.pkg-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor:pointer;
+  transition: all .25s cubic-bezier(.4,0,.2,1);
+  position:relative; overflow:hidden;
+  display:flex; align-items:center; gap:14px;
+}
+.pkg-card::before {
+  content:'';
+  position:absolute; inset:0;
+  background: linear-gradient(135deg, rgba(240,192,64,0.04), transparent);
+  opacity:0; transition:opacity .25s;
+}
+.pkg-card:active { transform:scale(.97); }
+.pkg-card.selected {
+  border-color: rgba(240,192,64,0.5);
+  background: rgba(240,192,64,0.06);
+  box-shadow: 0 0 0 1px rgba(240,192,64,0.15), 0 8px 24px rgba(240,192,64,0.08);
+}
+.pkg-card.selected::before { opacity:1; }
 
-.header .logo{font-size:50px;margin-bottom:6px}
+.pkg-badge {
+  position:absolute; top:0; left:16px;
+  font-size:9px; font-weight:800; letter-spacing:.5px;
+  padding:3px 9px; border-radius:0 0 8px 8px; text-transform:uppercase;
+}
+.badge-hot { background:linear-gradient(135deg,#FF4757,#FF6B81); color:#fff; }
+.badge-best { background:linear-gradient(135deg,var(--gold),var(--orange)); color:#1a1a1a; }
+.badge-vip { background:linear-gradient(135deg,#8B5CF6,#6366F1); color:#fff; }
 
-.header h1{font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.pkg-icon-wrap {
+  width:52px; height:52px; border-radius:15px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:26px;
+  background: rgba(255,255,255,0.05); border:1px solid var(--border);
+  transition:transform .2s;
+}
+.pkg-card.selected .pkg-icon-wrap { transform:scale(1.05); }
 
-.header p{font-size:13px;color:var(--muted);margin-top:4px}
+.pkg-info { flex:1; min-width:0; }
+.pkg-name { font-size:15px; font-weight:700; margin-bottom:3px; }
+.pkg-desc { font-size:12px; color:var(--muted); }
 
-.sec{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin:16px 0 8px}
+.pkg-right { text-align:left; flex-shrink:0; }
+.pkg-price { font-size:18px; font-weight:900; color:var(--gold); line-height:1; }
+.pkg-old { font-size:11px; color:var(--muted2); text-decoration:line-through; margin-bottom:2px; }
+.pkg-save { font-size:10px; color:#4ade80; font-weight:700; margin-top:2px; }
 
-.pkg-card{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:14px 16px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;position:relative}
+.pkg-check {
+  position:absolute; top:12px; left:12px;
+  width:20px; height:20px; border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),var(--orange));
+  display:none; align-items:center; justify-content:center;
+  font-size:11px; box-shadow:0 2px 8px rgba(240,192,64,0.4);
+}
+.pkg-card.selected .pkg-check { display:flex; }
 
-.pkg-card:active{transform:scale(.98)}
+/* ========= ORDER SUMMARY ========= */
+.summary-wrap { padding:0 16px; margin-top:16px; }
+.summary-box {
+  background: var(--card2);
+  border:1px solid var(--border2);
+  border-radius:var(--radius);
+  overflow:hidden;
+}
+.summary-head {
+  padding:14px 16px;
+  background:rgba(240,192,64,0.05);
+  border-bottom:1px solid var(--border);
+  font-size:13px; font-weight:700; color:var(--gold);
+  display:flex; align-items:center; gap:8px;
+}
+.summary-body { padding:4px 0; }
+.s-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:10px 16px; font-size:13px;
+}
+.s-row .s-label { color:var(--muted); }
+.s-row .s-val { font-weight:600; }
+.s-divider { height:1px; background:var(--border); margin:4px 16px; }
+.s-total {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:14px 16px; font-size:16px; font-weight:900;
+  border-top:1px solid var(--border);
+}
+.s-total .s-total-val { color:var(--gold); font-size:20px; }
 
-.pkg-card.selected{border-color:var(--gold);background:rgba(245,197,24,.08)}
+/* ========= BUTTONS ========= */
+.btn-wrap { padding:0 16px; margin-top:12px; display:flex; flex-direction:column; gap:8px; }
 
-.badge{position:absolute;top:-1px;left:14px;font-size:10px;background:var(--red);color:#fff;padding:2px 8px;border-radius:0 0 8px 8px;font-weight:700}
+.btn {
+  width:100%; padding:16px; border:none; border-radius:var(--radius);
+  font-size:15px; font-weight:800; font-family:'Tajawal',sans-serif;
+  cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.btn:active { transform:scale(.97); }
+.btn-primary {
+  background:linear-gradient(135deg, #FFD700, #F0A500);
+  color:#1a1000;
+  box-shadow:0 4px 20px rgba(240,192,64,0.3);
+}
+.btn-primary:hover { box-shadow:0 6px 28px rgba(240,192,64,0.4); }
+.btn-primary:disabled { opacity:.35; cursor:not-allowed; transform:none; box-shadow:none; }
+.btn-ghost {
+  background:rgba(255,255,255,0.05);
+  color:var(--muted);
+  border:1px solid var(--border);
+}
 
-.badge.vip{background:linear-gradient(135deg,#a855f7,#6366f1)}
+/* ========= ABOUT ========= */
+.about-hero {
+  margin:20px 16px 0;
+  background:linear-gradient(135deg, rgba(240,192,64,0.08), rgba(139,92,246,0.05));
+  border:1px solid rgba(240,192,64,0.15);
+  border-radius:22px; padding:28px 20px; text-align:center;
+}
+.about-hero .alogo { font-size:52px; margin-bottom:12px; }
+.about-hero h2 {
+  font-size:22px; font-weight:900;
+  background:linear-gradient(135deg,#FFD700,#FF8C00);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  margin-bottom:8px;
+}
+.about-hero p { font-size:13px; color:var(--muted); line-height:1.7; }
 
-.pl{display:flex;align-items:center;gap:12px}
+.stats-grid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:10px; padding:0 16px; margin-top:12px;
+}
+.stat-card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:16px; text-align:center;
+}
+.stat-num { font-size:26px; font-weight:900; color:var(--gold); }
+.stat-lbl { font-size:11px; color:var(--muted); margin-top:3px; }
 
-.pi{font-size:28px}.pn{font-size:15px;font-weight:600}.pd{font-size:12px;color:var(--muted);margin-top:2px}
+.feat-list { padding:0 16px; display:flex; flex-direction:column; gap:8px; }
+.feat-item {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm); padding:14px;
+  display:flex; align-items:center; gap:14px;
+}
+.feat-ic {
+  width:42px; height:42px; border-radius:12px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:20px;
+}
+.feat-title { font-size:14px; font-weight:700; margin-bottom:2px; }
+.feat-desc { font-size:12px; color:var(--muted); }
 
-.pr{text-align:left}.pp{font-size:18px;font-weight:800;color:var(--gold)}.po{font-size:11px;text-decoration:line-through;color:var(--muted)}
+/* ========= SUPPORT ========= */
+.support-links { padding:0 16px; display:flex; flex-direction:column; gap:10px; }
+a.support-card {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius); padding:16px;
+  display:flex; align-items:center; gap:14px;
+  text-decoration:none; color:inherit;
+  transition:all .2s;
+}
+a.support-card:active { transform:scale(.98); border-color:var(--border2); }
+.s-icon {
+  width:48px; height:48px; border-radius:14px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:22px;
+}
+.s-title { font-size:15px; font-weight:700; margin-bottom:2px; }
+.s-desc { font-size:12px; color:var(--muted); }
+.s-arr { margin-right:auto; margin-left:0; color:var(--muted2); font-size:22px; font-weight:300; }
 
-.ck{position:absolute;top:50%;left:14px;transform:translateY(-50%);font-size:18px;display:none}
+.faq-wrap { padding:0 16px; display:flex; flex-direction:column; gap:8px; }
+.faq-item {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm); overflow:hidden;
+}
+.faq-q {
+  padding:15px 16px; font-size:14px; font-weight:600;
+  cursor:pointer; display:flex; justify-content:space-between; align-items:center;
+  user-select:none;
+}
+.faq-arr { color:var(--muted); transition:transform .25s; font-size:18px; flex-shrink:0; }
+.faq-a {
+  font-size:13px; color:var(--muted); line-height:1.65;
+  max-height:0; overflow:hidden; transition:max-height .3s ease, padding .3s;
+  padding:0 16px;
+}
+.faq-item.open .faq-arr { transform:rotate(180deg); color:var(--gold); }
+.faq-item.open .faq-a { max-height:200px; padding:0 16px 16px; }
+.faq-item.open .faq-q { color:var(--gold); }
 
-.pkg-card.selected .ck{display:block}
+/* ========= TOAST ========= */
+.toast {
+  position:fixed; bottom:100px; left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:rgba(30,30,50,0.95); backdrop-filter:blur(10px);
+  border:1px solid var(--border); border-radius:30px;
+  padding:10px 22px; font-size:13px; font-weight:600;
+  white-space:nowrap; z-index:999; pointer-events:none;
+  opacity:0; transition:all .3s; box-shadow:0 8px 24px rgba(0,0,0,0.4);
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
-.box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px}
-
-.row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;color:var(--muted)}
-
-.row span:last-child{color:#fff}
-
-.row.tot{font-size:16px;font-weight:700;color:#fff;margin-top:8px;padding-top:10px;border-top:1px solid var(--border)}
-
-.row.tot span:last-child{color:var(--gold)}
-
-.btn{width:100%;padding:15px;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;transition:transform .15s,opacity .2s;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px}
-
-.btn:active{transform:scale(.97)}
-
-.btn-g{background:linear-gradient(135deg,var(--gold),var(--orange));color:#1a1a1a}
-
-.btn-o{background:transparent;color:var(--gold);border:1.5px solid var(--gold)}
-
-.btn:disabled{opacity:.3;cursor:not-allowed}
-
-.hero{background:linear-gradient(135deg,rgba(245,197,24,.12),rgba(255,140,0,.04));border:1px solid rgba(245,197,24,.2);border-radius:20px;padding:24px;text-align:center;margin-bottom:16px}
-
-.hero .hl{font-size:56px;margin-bottom:8px}
-
-.hero h2{font-size:20px;font-weight:800;color:var(--gold)}
-
-.hero p{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.6}
-
-.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
-
-.sc{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center}
-
-.sn{font-size:24px;font-weight:800;color:var(--gold)}.sl{font-size:11px;color:var(--muted);margin-top:3px}
-
-.fl{display:flex;flex-direction:column;gap:10px}
-
-.fi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px}
-
-.fii{font-size:22px}.fit{font-weight:600;font-size:13px;margin-bottom:2px}.fid{color:var(--muted);font-size:12px}
-
-a.sc2{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .2s;text-decoration:none;color:inherit}
-
-a.sc2:active{transform:scale(.98)}
-
-.si{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
-
-.st{font-size:15px;font-weight:600}.sd{font-size:12px;color:var(--muted);margin-top:2px}.sa{margin-right:auto;margin-left:0;color:var(--muted);font-size:20px}
-
-.faq{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;overflow:hidden}
-
-.faq-q{padding:14px 16px;font-size:14px;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
-
-.arr{transition:transform .2s;font-size:12px;color:var(--muted)}
-
-.faq-a{padding:0 16px;font-size:13px;color:var(--muted);max-height:0;overflow:hidden;transition:max-height .3s,padding .3s;line-height:1.6}
-
-.faq.open .faq-a{max-height:200px;padding:0 16px 14px}
-
-.faq.open .arr{transform:rotate(180deg)}
-
-.div{height:1px;background:var(--border);margin:16px 0}
-
+/* ========= LOADING ========= */
+.page-pad { padding-bottom: 12px; }
 </style>
-
 </head>
-
 <body>
 
+<!-- ======= SHOP PAGE ======= -->
+<div class="page active page-pad" id="pg-shop">
+  <div class="hero-header">
+    <div class="hero-glow"></div>
+    <div class="logo-wrap">⭐</div>
+    <div class="hero-title">Elite Star</div>
+    <div class="hero-sub">متجر الباقات الاحترافي</div>
+  </div>
 
+  <!-- CATEGORY TABS -->
+  <div style="padding:0 16px;margin-bottom:4px">
+    <div style="display:flex;gap:8px;background:rgba(255,255,255,0.04);border-radius:14px;padding:4px;">
+      <button class="tab-btn active" onclick="switchTab('stars',this)" id="tab-stars">⭐ نجوم تلغرام</button>
+      <button class="tab-btn" onclick="switchTab('premium',this)" id="tab-premium">💎 بريميوم</button>
+    </div>
+  </div>
 
-<!-- SHOP -->
+  <!-- STARS PACKAGES -->
+  <div id="cat-stars">
+    <div class="sec-label">باقات النجوم</div>
+    <div class="pkg-list" id="pkg-list-stars"></div>
+  </div>
 
-<div class="page active" id="page-shop">
+  <!-- PREMIUM PACKAGES -->
+  <div id="cat-premium" style="display:none">
+    <div class="sec-label">اشتراك بريميوم</div>
+    <div class="pkg-list" id="pkg-list-premium"></div>
+  </div>
 
-  <div class="header"><div class="logo">⭐</div><h1>Elite Star Bot</h1><p>اختر باقتك المفضلة</p></div>
-
-  <div class="sec">الباقات المتاحة</div>
-
-  <div id="pkg-list"></div>
-
-  <div id="summary" style="display:none">
-
-    <div class="sec">ملخص الطلب</div>
-
-    <div class="box">
-
-      <div class="row"><span>الباقة</span><span id="s-name">—</span></div>
-
-      <div class="row"><span>طريقة الدفع</span><span>تحويل / CCP</span></div>
-
-      <div class="row tot"><span>الإجمالي</span><span id="s-price">—</span></div>
-
+  <!-- ORDER AREA -->
+  <div id="order-area" style="display:none">
+    <div class="sec-label" style="margin-top:20px">ملخص الطلب</div>
+    <div class="summary-wrap">
+      <div class="summary-box">
+        <div class="summary-head">🧾 تفاصيل الطلب</div>
+        <div class="summary-body">
+          <div class="s-row"><span class="s-label">الباقة</span><span class="s-val" id="s-name">—</span></div>
+          <div class="s-divider"></div>
+          <div class="s-row"><span class="s-label">وقت التنفيذ</span><span class="s-val">⚡ أقل من ساعة</span></div>
+        </div>
+        <div class="s-total"><span>الإجمالي</span><span class="s-total-val" id="s-price">—</span></div>
+      </div>
     </div>
 
-    <button class="btn btn-g" onclick="sendOrder()">🛒 تأكيد الطلب</button>
+    <!-- PAYMENT METHOD -->
+    <div class="sec-label" style="margin-top:16px">طريقة الدفع</div>
+    <div style="padding:0 16px;display:flex;flex-direction:column;gap:8px;" id="pay-methods">
+      <div class="pay-card" id="pay-ccp" onclick="selectPay('ccp')">
+        <div style="font-size:22px">🏦</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:14px">الدفع عبر CCP</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">تحويل بريدي مباشر</div>
+        </div>
+        <div class="pay-check" id="chk-ccp">✓</div>
+      </div>
+      <div class="pay-card" id="pay-flexy" onclick="selectPay('flexy')">
+        <div style="font-size:22px">📱</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:14px">الدفع عبر Flexy</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">شحن رصيد مباشر</div>
+        </div>
+        <div class="pay-check" id="chk-flexy">✓</div>
+      </div>
+    </div>
 
-    <button class="btn btn-o" onclick="reset()">↩ تغيير الباقة</button>
+    <!-- CCP INFO -->
+    <div id="info-ccp" style="display:none;padding:0 16px;margin-top:10px">
+      <div class="info-box">
+        <div class="info-box-title">📋 بيانات حساب CCP</div>
+        <div class="info-row-item"><span>الاسم واللقب</span><span>M.MOUADHE DJELLOULI</span></div>
+        <div class="info-row-item"><span>رقم الـ RIP</span><span style="direction:ltr;text-align:left">38 00411839</span></div>
+        <div class="info-row-item"><span>المفتاح</span><span>08</span></div>
+        <div style="margin-top:10px;padding:10px;background:rgba(240,192,64,.06);border-radius:10px;font-size:12px;color:var(--muted);line-height:1.6">
+          ⚠️ قم بالتحويل بالمبلغ المحدد، ثم أرسل صورة الوصل للبوت
+        </div>
+      </div>
+    </div>
 
+    <!-- FLEXY INFO -->
+    <div id="info-flexy" style="display:none;padding:0 16px;margin-top:10px">
+      <div class="info-box">
+        <div class="info-box-title">📱 بيانات Flexy</div>
+        <div class="info-row-item"><span>الرقم</span><span style="direction:ltr;font-weight:800;color:var(--gold);font-size:16px">0549894647</span></div>
+        <div style="margin-top:10px;padding:10px;background:rgba(240,192,64,.06);border-radius:10px;font-size:12px;color:var(--muted);line-height:1.6">
+          ⚠️ أرسل الفليكسي بالمبلغ المحدد، ثم أرسل لقطة شاشة تثبت الإرسال للبوت
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-wrap">
+      <button class="btn btn-primary" id="confirm-btn" onclick="sendOrder()" disabled>🛒 تأكيد الطلب</button>
+      <button class="btn btn-ghost" onclick="resetSel()">↩ تغيير الباقة</button>
+    </div>
   </div>
 
-  <button class="btn btn-g" id="bbt" disabled style="margin-top:4px">اختر باقة للمتابعة</button>
-
+  <div class="btn-wrap" id="hint-btn" style="margin-top:16px">
+    <button class="btn btn-primary" disabled>👆 اختر باقة للمتابعة</button>
+  </div>
 </div>
 
-
-
-<!-- ABOUT -->
-
-<div class="page" id="page-about">
-
-  <div style="height:16px"></div>
-
-  <div class="hero"><div class="hl">⭐</div><h2>Elite Star Bot</h2><p>منصتك الموثوقة لشحن النجوم وباقات تيليقرام بأسعار تنافسية وخدمة سريعة.</p></div>
-
-  <div class="sgrid">
-
-    <div class="sc"><div class="sn">+500</div><div class="sl">عميل راضٍ</div></div>
-
-    <div class="sc"><div class="sn">24/7</div><div class="sl">خدمة مستمرة</div></div>
-
-    <div class="sc"><div class="sn">5⭐</div><div class="sl">تقييم المتجر</div></div>
-
-    <div class="sc"><div class="sn">&lt;1h</div><div class="sl">وقت التسليم</div></div>
-
+<!-- ======= ABOUT PAGE ======= -->
+<div class="page page-pad" id="pg-about">
+  <div class="about-hero">
+    <div class="alogo">⭐</div>
+    <h2>Elite Star Bot</h2>
+    <p>منصتك الموثوقة لشحن النجوم وباقات تيليقرام بأفضل الأسعار وأسرع خدمة في الجزائر.</p>
   </div>
 
-  <div class="sec">لماذا Elite Star؟</div>
-
-  <div class="fl">
-
-    <div class="fi"><div class="fii">⚡</div><div><div class="fit">شحن فوري</div><div class="fid">يتم تنفيذ الطلبات خلال أقل من ساعة</div></div></div>
-
-    <div class="fi"><div class="fii">🔒</div><div><div class="fit">آمن 100%</div><div class="fid">جميع المعاملات محمية ومضمونة</div></div></div>
-
-    <div class="fi"><div class="fii">💰</div><div><div class="fit">أسعار تنافسية</div><div class="fid">أقل الأسعار مع أعلى جودة خدمة</div></div></div>
-
-    <div class="fi"><div class="fii">🎯</div><div><div class="fit">دعم متواصل</div><div class="fid">فريقنا متاح لمساعدتك في أي وقت</div></div></div>
-
+  <div class="sec-label" style="margin-top:16px">إحصائياتنا</div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num">+500</div><div class="stat-lbl">عميل راضٍ</div></div>
+    <div class="stat-card"><div class="stat-num">24/7</div><div class="stat-lbl">خدمة مستمرة</div></div>
+    <div class="stat-card"><div class="stat-num">5 ⭐</div><div class="stat-lbl">تقييم العملاء</div></div>
+    <div class="stat-card"><div class="stat-num">&lt; 1h</div><div class="stat-lbl">وقت التسليم</div></div>
   </div>
 
+  <div class="sec-label">لماذا نحن؟</div>
+  <div class="feat-list">
+    <div class="feat-item">
+      <div class="feat-ic" style="background:rgba(250,204,21,.1)">⚡</div>
+      <div><div class="feat-title">شحن فوري</div><div class="feat-desc">تنفيذ الطلبات خلال أقل من ساعة</div></div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-ic" style="background:rgba(99,102,241,.1)">🔒</div>
+      <div><div class="feat-title">آمن ومضمون 100%</div><div class="feat-desc">جميع المعاملات محمية بضمان كامل</div></div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-ic" style="background:rgba(74,222,128,.1)">💰</div>
+      <div><div class="feat-title">أسعار لا تُنافَس</div><div class="feat-desc">أفضل الأسعار في السوق الجزائري</div></div>
+    </div>
+    <div class="feat-item">
+      <div class="feat-ic" style="background:rgba(251,146,60,.1)">🎯</div>
+      <div><div class="feat-title">دعم متواصل</div><div class="feat-desc">فريقنا متاح لمساعدتك في أي وقت</div></div>
+    </div>
+  </div>
+  <div style="height:8px"></div>
 </div>
 
+<!-- ======= SUPPORT PAGE ======= -->
+<div class="page page-pad" id="pg-support">
+  <div class="hero-header" style="padding-bottom:8px">
+    <div class="hero-glow"></div>
+    <div class="logo-wrap" style="font-size:30px">💬</div>
+    <div class="hero-title" style="font-size:22px">الدعم والمساعدة</div>
+    <div class="hero-sub">نحن هنا لمساعدتك دائماً</div>
+  </div>
 
+  <div class="sec-label">تواصل معنا</div>
+  <div class="support-links">
 
-<!-- SUPPORT -->
+      <div class="s-arr">›</div>
+    </a>
+    <a class="support-card" href="https://t.me/Elitestarproofs" target="_blank">
+      <div class="s-icon" style="background:rgba(240,192,64,.1)">📢</div>
+      <div><div class="s-title">قناة الإثباتات</div><div class="s-desc">شاهد إثباتات عملائنا الراضين</div></div>
+      <div class="s-arr">›</div>
+    </a>
+    <a class="support-card" href="https://t.me/YourGroup" target="_blank">
+      <div class="s-icon" style="background:rgba(74,222,128,.1)">👥</div>
+      <div><div class="s-title">مجموعة العملاء</div><div class="s-desc">شارك تجربتك مع مجتمعنا</div></div>
+      <div class="s-arr">›</div>
+    </a>
+  </div>
 
-<div class="page" id="page-support">
-
-  <div style="height:16px"></div>
-
-  <div class="sec">تواصل معنا</div>
-
-  <a class="sc2" href="https://t.me/YourSupportUsername" target="_blank">
-
-    <div class="si" style="background:rgba(0,136,204,.15)">💬</div>
-
-    <div><div class="st">المحادثة المباشرة</div><div class="sd">تحدث مع فريق الدعم مباشرة</div></div>
-
-    <div class="sa">›</div>
-
-  </a>
-
-  <a class="sc2" href="https://t.me/YourChannelUsername" target="_blank">
-
-    <div class="si" style="background:rgba(245,197,24,.15)">📢</div>
-
-    <div><div class="st">قناة الإعلانات</div><div class="sd">آخر الأخبار والعروض الحصرية</div></div>
-
-    <div class="sa">›</div>
-
-  </a>
-
-  <a class="sc2" href="https://t.me/YourGroupUsername" target="_blank">
-
-    <div class="si" style="background:rgba(100,200,100,.15)">👥</div>
-
-    <div><div class="st">مجموعة العملاء</div><div class="sd">انضم لمجتمعنا وشارك تجربتك</div></div>
-
-    <div class="sa">›</div>
-
-  </a>
-
-  <div class="div"></div>
-
-  <div class="sec">الأسئلة الشائعة</div>
-
-  <div class="faq"><div class="faq-q" onclick="this.closest('.faq').classList.toggle('open')">كم يستغرق وقت الشحن؟ <span class="arr">▼</span></div><div class="faq-a">يتم تنفيذ جميع الطلبات خلال أقل من ساعة من تأكيد الدفع.</div></div>
-
-  <div class="faq"><div class="faq-q" onclick="this.closest('.faq').classList.toggle('open')">ما طرق الدفع المقبولة؟ <span class="arr">▼</span></div><div class="faq-a">نقبل التحويل البنكي وبريد الجزائر (CCP). تواصل معنا للمزيد.</div></div>
-
-  <div class="faq"><div class="faq-q" onclick="this.closest('.faq').classList.toggle('open')">ماذا أفعل إذا لم يصلني الشحن؟ <span class="arr">▼</span></div><div class="faq-a">تواصل معنا فوراً مع صورة الوصل وسنحل المشكلة بسرعة.</div></div>
-
-  <div class="faq"><div class="faq-q" onclick="this.closest('.faq').classList.toggle('open')">هل يمكن استرداد المبلغ؟ <span class="arr">▼</span></div><div class="faq-a">في حال حدوث خطأ من طرفنا يتم الاسترداد الكامل أو إعادة الشحن فوراً.</div></div>
-
+  <div class="sec-label">الأسئلة الشائعة</div>
+  <div class="faq-wrap">
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.closest('.faq-item').classList.toggle('open')">
+        كم يستغرق وقت الشحن؟ <span class="faq-arr">⌄</span>
+      </div>
+      <div class="faq-a">يتم تنفيذ جميع الطلبات خلال أقل من ساعة من تأكيد الدفع. في أوقات الذروة قد يمتد الوقت قليلاً ولكن لن يتجاوز ساعتين.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.closest('.faq-item').classList.toggle('open')">
+        ما طرق الدفع المقبولة؟ <span class="faq-arr">⌄</span>
+      </div>
+      <div class="faq-a">نقبل التحويل البنكي وبريد الجزائر CCP. تواصل معنا للحصول على معلومات الحساب.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.closest('.faq-item').classList.toggle('open')">
+        ماذا أفعل إذا لم يصلني الشحن؟ <span class="faq-arr">⌄</span>
+      </div>
+      <div class="faq-a">تواصل معنا فوراً عبر الدعم المباشر مع إرفاق صورة وصل الدفع وسنحل المشكلة في أقرب وقت ممكن.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.closest('.faq-item').classList.toggle('open')">
+        هل يمكن استرداد المبلغ؟ <span class="faq-arr">⌄</span>
+      </div>
+      <div class="faq-a">في حال حدوث أي خطأ من طرفنا يتم استرداد المبلغ كاملاً أو إعادة الشحن فوراً. رضاك هو أولويتنا.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="this.closest('.faq-item').classList.toggle('open')">
+        هل يمكنني الشحن لحساب شخص آخر؟ <span class="faq-arr">⌄</span>
+      </div>
+      <div class="faq-a">نعم، يمكنك الشحن لأي حساب تيليقرام. فقط أرسل رابط أو يوزرنيم الحساب المراد شحنه.</div>
+    </div>
+  </div>
+  <div style="height:8px"></div>
 </div>
 
-
-
+<!-- NAV -->
 <nav class="nav">
-
-  <button class="nav-btn active" onclick="goTo('shop',this)"><span class="ic">🛒</span><span>المتجر</span></button>
-
-  <button class="nav-btn" onclick="goTo('about',this)"><span class="ic">⭐</span><span>عن المتجر</span></button>
-
-  <button class="nav-btn" onclick="goTo('support',this)"><span class="ic">💬</span><span>الدعم</span></button>
-
+  <button class="nav-btn active" onclick="goTo('shop',this)">
+    <span class="ni">🛒</span><span>المتجر</span>
+  </button>
+  <button class="nav-btn" onclick="goTo('about',this)">
+    <span class="ni">⭐</span><span>عن المتجر</span>
+  </button>
+  <button class="nav-btn" onclick="goTo('support',this)">
+    <span class="ni">💬</span><span>الدعم</span>
+  </button>
 </nav>
 
-
+<div class="toast" id="toast"></div>
 
 <script>
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
 
-const tg=window.Telegram.WebApp;tg.ready();tg.expand();
-
-const PKGS=[
-
-  {name:"باقة 100 نجمة",icon:"⭐",price:"500 دج",old:"700 دج",badge:null,desc:"مناسبة للبداية"},
-
-  {name:"باقة 250 نجمة",icon:"⭐",price:"1000 دج",old:"1500 دج",badge:"الأكثر طلباً",desc:"قيمة ممتازة"},
-
-  {name:"باقة 500 نجمة",icon:"💫",price:"1800 دج",old:"2500 دج",badge:null,desc:"توفير 28%"},
-
-  {name:"باقة 1000 نجمة",icon:"💎",price:"3200 دج",old:"5000 دج",badge:"الأفضل",desc:"للمحترفين"},
-
-  {name:"VIP شهري",icon:"👑",price:"5000 دج",old:null,badge:"VIP",badgeClass:"vip",desc:"وصول كامل"},
-
+// ===== PACKAGES DATA =====
+const PKGS = [
+  {
+    name: "باقة 100 نجمة", icon: "⭐",
+    price: "500 دج", old: "700 دج", save: "توفير 29%",
+    desc: "مثالية للبداية", badge: null,
+    color: "rgba(250,204,21,.08)"
+  },
+  {
+    name: "باقة 250 نجمة", icon: "⭐",
+    price: "1,000 دج", old: "1,500 دج", save: "توفير 33%",
+    desc: "الأكثر مبيعاً", badge: {text:"🔥 الأكثر طلباً", cls:"badge-hot"},
+    color: "rgba(255,100,80,.06)"
+  },
+  {
+    name: "باقة 500 نجمة", icon: "💫",
+    price: "1,800 دج", old: "2,500 دج", save: "توفير 28%",
+    desc: "قيمة ممتازة للمحترفين", badge: null,
+    color: "rgba(96,165,250,.06)"
+  },
+  {
+    name: "باقة 1000 نجمة", icon: "💎",
+    price: "3,200 دج", old: "5,000 دج", save: "توفير 36%",
+    desc: "للاستخدام المكثف", badge: {text:"👑 الأفضل قيمة", cls:"badge-best"},
+    color: "rgba(240,192,64,.07)"
+  },
+  {
+    name: "VIP شهري كامل", icon: "👑",
+    price: "5,000 دج", old: null, save: null,
+    desc: "وصول كامل لجميع المزايا الحصرية", badge: {text:"💎 VIP", cls:"badge-vip"},
+    color: "rgba(139,92,246,.08)"
+  },
 ];
 
-let sel=null;
+let selected = null;
 
-const list=document.getElementById('pkg-list');
-
-PKGS.forEach((p,i)=>{
-
-  const c=document.createElement('div');c.className='pkg-card';
-
-  c.innerHTML=`${p.badge?`<div class="badge ${p.badgeClass||''}">${p.badge}</div>`:''}
-
-    <div class="pl"><div class="pi">${p.icon}</div><div><div class="pn">${p.name}</div><div class="pd">${p.desc}</div></div></div>
-
-    <div class="pr">${p.old?`<div class="po">${p.old}</div>`:''}<div class="pp">${p.price}</div></div>
-
-    <div class="ck">✅</div>`;
-
-  c.onclick=()=>{
-
-    document.querySelectorAll('.pkg-card').forEach(x=>x.classList.remove('selected'));
-
-    c.classList.add('selected');sel=p;
-
-    document.getElementById('s-name').textContent=p.name;
-
-    document.getElementById('s-price').textContent=p.price;
-
-    document.getElementById('summary').style.display='block';
-
-    document.getElementById('bbt').style.display='none';
-
-    tg.HapticFeedback?.impactOccurred('light');
-
-  };
-
-  list.appendChild(c);
-
+// ===== RENDER PACKAGES =====
+const list = document.getElementById('pkg-list');
+PKGS.forEach((p, i) => {
+  const el = document.createElement('div');
+  el.className = 'pkg-card';
+  el.style.background = p.color;
+  el.innerHTML = `
+    ${p.badge ? `<div class="pkg-badge ${p.badge.cls}">${p.badge.text}</div>` : ''}
+    <div class="pkg-icon-wrap">${p.icon}</div>
+    <div class="pkg-info" style="${p.badge ? 'margin-top:10px' : ''}">
+      <div class="pkg-name">${p.name}</div>
+      <div class="pkg-desc">${p.desc}</div>
+    </div>
+    <div class="pkg-right" style="${p.badge ? 'margin-top:10px' : ''}">
+      ${p.old ? `<div class="pkg-old">${p.old}</div>` : ''}
+      <div class="pkg-price">${p.price}</div>
+      ${p.save ? `<div class="pkg-save">${p.save}</div>` : ''}
+    </div>
+    <div class="pkg-check">✓</div>
+  `;
+  el.onclick = () => selectPkg(el, p);
+  list.appendChild(el);
 });
 
-function reset(){
-
-  document.querySelectorAll('.pkg-card').forEach(x=>x.classList.remove('selected'));
-
-  sel=null;document.getElementById('summary').style.display='none';
-
-  document.getElementById('bbt').style.display='flex';
-
+function selectPkg(el, pkg) {
+  document.querySelectorAll('.pkg-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selected = pkg;
+  document.getElementById('s-name').textContent = pkg.name;
+  document.getElementById('s-price').textContent = pkg.price;
+  document.getElementById('order-area').style.display = 'block';
+  document.getElementById('hint-btn').style.display = 'none';
+  el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  tg?.HapticFeedback?.impactOccurred('medium');
 }
 
-function sendOrder(){if(!sel)return;tg.sendData(JSON.stringify({item:sel.name,price:sel.price}));}
-
-function goTo(p,b){
-
-  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-
-  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
-
-  document.getElementById('page-'+p).classList.add('active');b.classList.add('active');
-
+function resetSel() {
+  document.querySelectorAll('.pkg-card').forEach(c => c.classList.remove('selected'));
+  selected = null;
+  document.getElementById('order-area').style.display = 'none';
+  document.getElementById('hint-btn').style.display = 'block';
+  tg?.HapticFeedback?.impactOccurred('light');
 }
 
+function sendOrder() {
+  if (!selected) return;
+  if (tg) {
+    tg.sendData(JSON.stringify({ item: selected.name, price: selected.price }));
+  } else {
+    showToast('✅ تم إرسال الطلب بنجاح!');
+  }
+  tg?.HapticFeedback?.notificationOccurred('success');
+}
+
+// ===== NAVIGATION =====
+function goTo(page, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('pg-' + page).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo({ top:0, behavior:'smooth' });
+  tg?.HapticFeedback?.selectionChanged();
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
 </script>
-
 </body>
-
 </html>
-
-```
-
