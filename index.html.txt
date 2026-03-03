@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+
+<html lang="ar" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8"/>
+
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+
+<title>Elite Star Bot</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{--gold:#f5c518;--orange:#ff8c00;--red:#ff4757;--bg:#0f0f1a;--card:rgba(255,255,255,.05);--border:rgba(255,255,255,.08);--muted:rgba(255,255,255,.5)}
+
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--tg-theme-bg-color,var(--bg));color:var(--tg-theme-text-color,#fff);min-height:100vh;padding-bottom:80px}
+
+.nav{position:fixed;bottom:0;left:0;right:0;background:rgba(15,15,26,.97);backdrop-filter:blur(12px);border-top:1px solid var(--border);display:flex;z-index:100}
+
+.nav-btn{flex:1;padding:10px 0 8px;background:none;border:none;color:var(--muted);font-size:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .2s}
+
+.nav-btn .ic{font-size:22px}
+
+.nav-btn.active{color:var(--gold)}
+
+.page{display:none;padding:16px}
+
+.page.active{display:block}
+
+.header{text-align:center;padding:20px 0 12px}
+
+.header .logo{font-size:50px;margin-bottom:6px}
+
+.header h1{font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+.header p{font-size:13px;color:var(--muted);margin-top:4px}
+
+.sec{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;margin:16px 0 8px}
+
+.pkg-card{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:14px 16px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;position:relative}
+
+.pkg-card:active{transform:scale(.98)}
+
+.pkg-card.selected{border-color:var(--gold);background:rgba(245,197,24,.08)}
+
+.badge{position:absolute;top:-1px;left:14px;font-size:10px;background:var(--red);color:#fff;padding:2px 8px;border-radius:0 0 8px 8px;font-weight:700}
+
+.badge.vip{background:linear-gradient(135deg,#a855f7,#6366f1)}
+
+.pl{display:flex;align-items:center;gap:12px}
+
+.pi{font-size:28px}.pn{font-size:15px;font-weight:600}.pd{font-size:12px;color:var(--muted);margin-top:2px}
+
+.pr{text-align:left}.pp{font-size:18px;font-weight:800;color:var(--gold)}.po{font-size:11px;text-decoration:line-through;color:var(--muted)}
+
+.ck{position:absolute;top:50%;left:14px;transform:translateY(-50%);font-size:18px;display:none}
+
+.pkg-card.selected .ck{display:block}
+
+.box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+
+.row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;color:var(--muted)}
+
+.row span:last-child{color:#fff}
+
+.row.tot{font-size:16px;font-weight:700;color:#fff;margin-top:8px;padding-top:10px;border-top:1px solid var(--border)}
+
+.row.tot span:last-child{color:var(--gold)}
+
+.btn{width:100%;padding:15px;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;transition:transform .15s,opacity .2s;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px}
+
+.btn:active{transform:scale(.97)}
+
+.btn-g{background:linear-gradient(135deg,var(--gold),var(--orange));color:#1a1a1a}
+
+.btn-o{background:transparent;color:var(--gold);border:1.5px solid var(--gold)}
+
+.btn:disabled{opacity:.3;cursor:not-allowed}
+
+.hero{background:linear-gradient(135deg,rgba(245,197,24,.12),rgba(255,140,0,.04));border:1px solid rgba(245,197,24,.2);border-radius:20px;padding:24px;text-align:center;margin-bottom:16px}
+
+.hero .hl{font-size:56px;margin-bottom:8px}
+
+.hero h2{font-size:20px;font-weight:800;color:var(--gold)}
+
+.hero p{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.6}
+
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+
+.sc{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center}
+
+.sn{font-size:24px;font-weight:800;color:var(--gold)}.sl{font-size:11px;color:var(--muted);margin-top:3px}
+
+.fl{display:flex;flex-direction:column;gap:10px}
+
+.fi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px}
+
+.fii{font-size:22px}.fit{font-weight:600;font-size:13px;margin-bottom:2px}.fid{color:var(--muted);font-size:12px}
+
+a.sc2{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .2s;text-decoration:none;color:inherit}
+
+a.sc2:active{transform:scale(.98)}
+
+.si{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+
+.st{font-size:15px;font-weight:600}.sd{font-size:12px;color:var(--muted);margin-top:2px}.sa{margin-right:auto;margin-left:0;color:var(--muted);font-size:20px}
+
+.faq{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;overflow:hidden}
+
+.faq-q{padding:14px 16px;font-size:14px;font-weight:600;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+
+.arr{transition:transform .2s;font-size:12px;color:var(--muted)}
+
+.faq-a{padding:0 16px;font-size:13px;color:var(--muted);max-height:0;overflow:hidden;transition:max-height .3s,padding .3s;line-height:1.6}
+
+.faq.open .faq-a{max-height:200px;padding:0 16px 14px}
+
+.faq.open .arr{transform:rotate(180deg)}
+
+.div{height:1px;background:var(--border);margin:16px 0}
+
+</style>
+
+</head>
+
+<body>
+
+
+
+<!-- SHOP -->
+
+<div class="page active" id="page-shop">
+
+  <div class="header"><div class="logo">⭐</div><h1>Elite Star Bot</h1><p>اختر باقتك المفضلة</p></div>
+
+  <div class="sec">الباقات المتاحة</div>
+
+  <div id="pkg-list"></div>
+
+  <div id="summary" style="display:none">
+
+    <div class="sec">ملخص الطلب</div>
+
+    <div class="box">
+
+      <div class="row"><span>الباقة</span><span id="s-name">—</span></div>
+
+      <div class="row"><span>طريقة الدفع</span><span>تحويل / CCP</span></div>
+
+      <div class="row tot"><span>الإجمالي</span><span id="s-price">—</span></div>
+
+    </div>
+
+    <button class="btn btn-g" onclick="sendOrder()">🛒 تأكيد الطلب</button>
+
+    <button class="btn btn-o" onclick="reset()">↩ تغيير الباقة</button>
+
+  </div>
+
+  <button class="btn btn-g" id="bbt" disabled style="margin-top:4px">اختر باقة للمتابعة</button>
+
+</div>
+
+
+
+<!-- ABOUT -->
+
+<div class="page" id="page-about">
+
+  <div style="height:16px"></div>
+
+  <div class="hero"><div class="hl">⭐</div><h2>Elite Star Bot</h2><p>منصتك الموثوقة لشحن النجوم وباقات تيليقرام بأسعار تنافسية وخدمة سريعة.</p></div>
+
+  <div class="sgrid">
+
+    <div class="sc"><div class="sn">+500</div><div class="sl">عميل راضٍ</div></div>
+
+    <div class="sc"><div class="sn">24/7</div><div class="sl">خدمة مستمرة</div></div>
+
+    <div class="sc"><div class="sn">5⭐</div><div class="sl">تقييم المتجر</div></div>
+
+    <div class="sc"><div class="sn">&lt;1h</div><div class="sl">وقت التسليم</div></div>
+
+  </div>
+
+  <div class="sec">لماذا Elite Star؟</div>
+
+  <div class="fl">
+
+    <div class="fi"><div class="fii">⚡</div><div><div class="fit">شحن فوري</div><div class="fid">يتم تنفيذ الطلبات خلال أقل من ساعة</div></div></div>
+
+    <div class="fi"><div class="fii">🔒</div><div><div class="fit">آمن 100%</div><div class="fid">جميع المعاملات محمية ومضمونة</div></div></div>
+
+    <div class="fi"><div class="fii">💰</div><div><div class="fit">أسعار تنافسية</div><div class="fid">أقل الأسعار مع أعلى جودة خدمة</div></div></div>
+
+    <div class="fi"><div class="fii">🎯</div><div><div class="fit">دعم متواصل</div><div class="fid">فريقنا متاح لمساعدتك في أي وقت</div></div></div>
+
+  </div>
+
+</div>
+
+
+
+<!-- SUPPORT -->
+
+<div class="page" id="page-support">
+
+  <div style="height:16px"></div>
+
+  <div class="sec">تواصل معنا</div>
+
+  <a class="sc2" href="https://t.me/YourSupportUsername" target="_blank">
+
+    <div class="si" style="background:rgba(0,136,204,.15)">💬</div>
+
+    <div><div class="st">المحادثة المباشرة</div><div class="sd">تحدث مع فريق الدعم مباشرة</div></div>
+
+    <div class="sa">›</div>
+
+  </a>
+
+  <a class="sc2" href="https://t.me/YourChannelUsername" target="_blank">
+
+    <div class="si" style="background:rgba(245,197,24,.15)">📢</div>
+
+    <div><div class="st">قناة الإعلانات</div><div class="sd">آخر الأخبار والعروض الحصرية</div></div>
+
+    <div class="sa">›</div>
+
+  </a>
+
+  <a class="sc2" href="https://t.me/YourGroupUsername" target="_blank">
+
+    <div class="si" style="background:rgba(100,200,100,.15)">👥</div>
+
+    <div><div class="st">مجموعة العملاء</div><div class="sd">انضم لمجتمعنا وشارك تجربتك</div></div>
+
+    <div class="sa">›</div>
+
+  </a>
+
+  <div class="div"></div>
+
+  <div class="sec">الأسئلة الشائعة</div>
+
+  <div class="faq"><div class="faq-q" onclick="this.closest('.faq').classList.toggle('open')">كم يستغرق وقت الشحن؟ <span class="arr">▼</span></div><div class="faq-a">يتم تنفيذ جميع الطلبات خلال أقل من ساعة من تأكيد الدفع.</div></div>
+
+  <div class="faq"><div class="faq-q" onclick="this.closest('.faq').classList.toggle('open')">ما طرق الدفع المقبولة؟ <span class="arr">▼</span></div><div class="faq-a">نقبل التحويل البنكي وبريد الجزائر (CCP). تواصل معنا للمزيد.</div></div>
+
+  <div class="faq"><div class="faq-q" onclick="this.closest('.faq').classList.toggle('open')">ماذا أفعل إذا لم يصلني الشحن؟ <span class="arr">▼</span></div><div class="faq-a">تواصل معنا فوراً مع صورة الوصل وسنحل المشكلة بسرعة.</div></div>
+
+  <div class="faq"><div class="faq-q" onclick="this.closest('.faq').classList.toggle('open')">هل يمكن استرداد المبلغ؟ <span class="arr">▼</span></div><div class="faq-a">في حال حدوث خطأ من طرفنا يتم الاسترداد الكامل أو إعادة الشحن فوراً.</div></div>
+
+</div>
+
+
+
+<nav class="nav">
+
+  <button class="nav-btn active" onclick="goTo('shop',this)"><span class="ic">🛒</span><span>المتجر</span></button>
+
+  <button class="nav-btn" onclick="goTo('about',this)"><span class="ic">⭐</span><span>عن المتجر</span></button>
+
+  <button class="nav-btn" onclick="goTo('support',this)"><span class="ic">💬</span><span>الدعم</span></button>
+
+</nav>
+
+
+
+<script>
+
+const tg=window.Telegram.WebApp;tg.ready();tg.expand();
+
+const PKGS=[
+
+  {name:"باقة 100 نجمة",icon:"⭐",price:"500 دج",old:"700 دج",badge:null,desc:"مناسبة للبداية"},
+
+  {name:"باقة 250 نجمة",icon:"⭐",price:"1000 دج",old:"1500 دج",badge:"الأكثر طلباً",desc:"قيمة ممتازة"},
+
+  {name:"باقة 500 نجمة",icon:"💫",price:"1800 دج",old:"2500 دج",badge:null,desc:"توفير 28%"},
+
+  {name:"باقة 1000 نجمة",icon:"💎",price:"3200 دج",old:"5000 دج",badge:"الأفضل",desc:"للمحترفين"},
+
+  {name:"VIP شهري",icon:"👑",price:"5000 دج",old:null,badge:"VIP",badgeClass:"vip",desc:"وصول كامل"},
+
+];
+
+let sel=null;
+
+const list=document.getElementById('pkg-list');
+
+PKGS.forEach((p,i)=>{
+
+  const c=document.createElement('div');c.className='pkg-card';
+
+  c.innerHTML=`${p.badge?`<div class="badge ${p.badgeClass||''}">${p.badge}</div>`:''}
+
+    <div class="pl"><div class="pi">${p.icon}</div><div><div class="pn">${p.name}</div><div class="pd">${p.desc}</div></div></div>
+
+    <div class="pr">${p.old?`<div class="po">${p.old}</div>`:''}<div class="pp">${p.price}</div></div>
+
+    <div class="ck">✅</div>`;
+
+  c.onclick=()=>{
+
+    document.querySelectorAll('.pkg-card').forEach(x=>x.classList.remove('selected'));
+
+    c.classList.add('selected');sel=p;
+
+    document.getElementById('s-name').textContent=p.name;
+
+    document.getElementById('s-price').textContent=p.price;
+
+    document.getElementById('summary').style.display='block';
+
+    document.getElementById('bbt').style.display='none';
+
+    tg.HapticFeedback?.impactOccurred('light');
+
+  };
+
+  list.appendChild(c);
+
+});
+
+function reset(){
+
+  document.querySelectorAll('.pkg-card').forEach(x=>x.classList.remove('selected'));
+
+  sel=null;document.getElementById('summary').style.display='none';
+
+  document.getElementById('bbt').style.display='flex';
+
+}
+
+function sendOrder(){if(!sel)return;tg.sendData(JSON.stringify({item:sel.name,price:sel.price}));}
+
+function goTo(p,b){
+
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+
+  document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));
+
+  document.getElementById('page-'+p).classList.add('active');b.classList.add('active');
+
+}
+
+</script>
+
+</body>
+
+</html>
+
+```
+
